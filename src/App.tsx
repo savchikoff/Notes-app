@@ -1,5 +1,4 @@
 import { Button } from 'antd';
-import { Normalize } from 'styled-normalize'
 import NotesList from './components/NotesList/NotesList';
 import React from 'react';
 

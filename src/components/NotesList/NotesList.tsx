@@ -14,21 +14,30 @@ const NotesList: React.FC = () => {
 
     const [notes, setNotes] = useState<string[]>(initialNotes);
 
-    const [tags, setTags] = useState<Array<[string, number]>>([]);
+    const [tags, setTags] = useState<Array<string>>([]);
 
-    const findTagsAll = (notes: string[]): [string, number][] => {
+    const findTagsAll = (notes: string[]): string[] => {
         const regex = /#[a-zA-Z0-9_]+/g;
-        let resultTags: [string, number][] = [];
+        let resultTags: string[] = [];
         notes.forEach((note, index) => {
             const matches = note.match(regex);
             if (matches) {
                 matches.forEach(match => {
-                    resultTags.push([match, index]);
+                    resultTags.push(match);
                 })
             }
         });
-        return resultTags;
+        return Array.from(new Set(resultTags));
     };
+
+    const highlightMatches = (note: string, tags: string[]): JSX.Element => {
+        const regex = new RegExp(tags.join("|"), "gi");
+        const highlightedNote = note.replace(regex, match => `<span class="highlight">${match}</span>`);
+
+        return (
+            <p className="noteItem-text" dangerouslySetInnerHTML={{ __html: highlightedNote }}></p>
+        );
+    }
 
     useEffect(() => {
         console.log("Get Items");
@@ -76,7 +85,7 @@ const NotesList: React.FC = () => {
             <NotesForm newNote={newNote} setNewNote={setNewNote} addNote={addNote} />
             {tags.map((tag, index) => (
                 <Tag key={index} bordered={false}>
-                    {tag[0]}
+                    {tag}
                 </Tag>
             ))
             }
@@ -86,7 +95,8 @@ const NotesList: React.FC = () => {
                         key={index}
                         text={note}
                         onDelete={() => deleteNote(index)}
-                        onEdit={(newText: string) => editNote(index, newText)} />
+                        onEdit={(newText: string) => editNote(index, newText)}
+                        highlightTags={(note: string) => highlightMatches(note, tags)} />
                 })}
             </ul>
         </div >
