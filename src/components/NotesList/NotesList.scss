@@ -5,7 +5,13 @@
     }
 
     &-list li:not(:last-child) {
-        margin-bottom: 8px;
+        margin-bottom: 16px;
+    }
+
+    &-allNotes {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
     }
 
 }

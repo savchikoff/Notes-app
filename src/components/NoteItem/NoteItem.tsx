@@ -1,4 +1,4 @@
-import { Button, Input } from "antd";
+import { Button, Input, Tag } from "antd";
 import { useState } from "react";
 import "./NoteItem.scss"
 
@@ -6,12 +6,13 @@ const { TextArea } = Input;
 
 interface INoteItem {
     text: string;
+    tags: string[];
     onDelete: () => void;
     onEdit: (newText: string) => void;
-    highlightTags: (note: string) => JSX.Element;
+    highlightTags: (note: string, tags: string[]) => JSX.Element;
 }
 
-const NoteItem: React.FC<INoteItem> = ({ text, onDelete, onEdit, highlightTags }) => {
+const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlightTags }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState(text);
 
@@ -24,24 +25,33 @@ const NoteItem: React.FC<INoteItem> = ({ text, onDelete, onEdit, highlightTags }
         onEdit(editedText);
     }
     return (
-        <li className="noteItem-content">
-            {isEditing ? (
-                <TextArea
-                    rows={2}
-                    value={editedText}
-                    maxLength={1200}
-                    onChange={(e) => setEditedText(e.target.value)}
-                />
-            ) : (
-                <div>{highlightTags(text)}</div>
-            )}
-            <div className="noteItem-buttons">
-                <Button onClick={isEditing ? handleSave : handleEdit} type="primary">
-                    {isEditing ? "Save" : "Edit"}
-                </Button>
-                <Button onClick={onDelete} type="primary" danger>
-                    Delete
-                </Button>
+        <li>
+            <div className="noteItem-content">
+                {isEditing ? (
+                    <TextArea
+                        rows={2}
+                        value={editedText}
+                        maxLength={1200}
+                        onChange={(e) => setEditedText(e.target.value)}
+                    />
+                ) : (
+                    <div>{highlightTags(text, tags)}</div>
+                )}
+                <div className="noteItem-buttons">
+                    <Button onClick={isEditing ? handleSave : handleEdit} type="primary">
+                        {isEditing ? "Save" : "Edit"}
+                    </Button>
+                    <Button onClick={onDelete} type="primary" danger>
+                        Delete
+                    </Button>
+                </div>
+            </div>
+            <div className="noteItem-tags">
+                {tags.filter(tag => text.includes(tag)).map((tag) => (
+                    <Tag bordered={false}>
+                        {tag}
+                    </Tag>
+                ))}
             </div>
         </li >
     )

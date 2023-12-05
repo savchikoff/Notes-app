@@ -8,6 +8,8 @@ import { Tag } from "antd";
 
 const NotesList: React.FC = () => {
     const [newNote, setNewNote] = useState('');
+    const [filteredNotes, setFilteredNotes] = useState<string[]>([]);
+    const [isFiltering, setIsFiltering] = useState(false);
     const storedNotes = localStorage.getItem('notes');
 
     const initialNotes: string[] = storedNotes ? JSON.parse(storedNotes) : [];
@@ -78,27 +80,40 @@ const NotesList: React.FC = () => {
         });
     }
 
+    const handleClickTag = (clickedTag: string) => {
+        setIsFiltering(!isFiltering);
+        const filteredNotes = notes.filter((note) => {
+            return note.includes(clickedTag);
+        })
+        setFilteredNotes(filteredNotes);
+    }
+
 
     return (
         <div className="noteList container">
             <h1 className="notesList-header">My notes!</h1>
             <NotesForm newNote={newNote} setNewNote={setNewNote} addNote={addNote} />
-            {tags.map((tag, index) => (
-                <Tag key={index} bordered={false}>
-                    {tag}
-                </Tag>
-            ))
-            }
-            <ul className="notesList-list">
-                {notes.map((note: string, index) => {
-                    return <NoteItem
-                        key={index}
-                        text={note}
-                        onDelete={() => deleteNote(index)}
-                        onEdit={(newText: string) => editNote(index, newText)}
-                        highlightTags={(note: string) => highlightMatches(note, tags)} />
-                })}
-            </ul>
+            <div className="notesList-allNotes">
+                <div className="notesList-tags">
+                    {tags.map((tag, index) => (
+                        <Tag key={index} bordered={false} onClick={() => handleClickTag(tag)}>
+                            {tag}
+                        </Tag>
+                    ))
+                    }
+                </div>
+                <ul className="notesList-list">
+                    {(isFiltering ? filteredNotes : notes).map((note: string, index) => {
+                        return <NoteItem
+                            key={index}
+                            text={note}
+                            tags={tags}
+                            onDelete={() => deleteNote(index)}
+                            onEdit={(newText: string) => editNote(index, newText)}
+                            highlightTags={(note: string, tags: string[]) => highlightMatches(note, tags)} />
+                    })}
+                </ul>
+            </div>
         </div >
     )
 }
