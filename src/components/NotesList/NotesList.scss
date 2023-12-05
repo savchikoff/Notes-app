@@ -1,0 +1,11 @@
+.notesList {
+
+    &-header {
+        margin-bottom: 16px;
+    }
+
+    &-list li:not(:last-child) {
+        margin-bottom: 8px;
+    }
+
+}
