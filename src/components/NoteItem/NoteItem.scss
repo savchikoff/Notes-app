@@ -8,6 +8,19 @@
         border-radius: 20px;
     }
 
+    &-editing {
+
+        input,
+        textarea {
+            margin-top: 6px;
+        }
+
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 800px;
+    }
+
     &-buttons {
         display: flex;
         flex-direction: column;
@@ -18,7 +31,6 @@
     &-text {
         max-width: 800px;
         word-break: break-word;
-        text-wrap: balance;
     }
 
     &-tags {

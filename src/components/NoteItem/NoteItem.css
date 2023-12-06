@@ -1,0 +1,31 @@
+.noteItem-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  padding: 10px 20px;
+  border-radius: 20px;
+}
+.noteItem-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 800px;
+}
+.noteItem-editing input,
+.noteItem-editing textarea {
+  margin-top: 6px;
+}
+.noteItem-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 40px;
+}
+.noteItem-text {
+  max-width: 800px;
+  word-break: break-word;
+}
+.noteItem-tags {
+  margin-top: 4px;
+}/*# sourceMappingURL=NoteItem.css.map */

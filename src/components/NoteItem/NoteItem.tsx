@@ -6,15 +6,18 @@ const { TextArea } = Input;
 
 interface INoteItem {
     text: string;
+    header: string;
     tags: string[];
     onDelete: () => void;
-    onEdit: (newText: string) => void;
+    onEdit: (newText: string, newHeader: string) => void;
     highlightTags: () => JSX.Element;
 }
 
-const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlightTags }) => {
+const NoteItem: React.FC<INoteItem> = ({ text, header, tags, onDelete, onEdit, highlightTags }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState(text);
+    const [editedHeader, setEditedHeader] = useState(header);
+
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -22,18 +25,27 @@ const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlight
 
     const handleSave = () => {
         setIsEditing(false);
-        onEdit(editedText);
+        onEdit(editedText, editedHeader);
     }
     return (
         <li>
             <div className="noteItem-content">
                 {isEditing ? (
-                    <TextArea
-                        rows={2}
-                        value={editedText}
-                        maxLength={1200}
-                        onChange={(e) => setEditedText(e.target.value)}
-                    />
+                    <div className="noteItem-editing">
+                        <label htmlFor="">
+                            New header
+                            <Input value={editedHeader} maxLength={26} onChange={(e) => setEditedHeader(e.target.value)} />
+                        </label>
+                        <label htmlFor="">
+                            New text
+                            <TextArea
+                                rows={8}
+                                value={editedText}
+                                maxLength={1200}
+                                onChange={(e) => setEditedText(e.target.value)}
+                            />
+                        </label>
+                    </div>
                 ) : (
                     <div>{highlightTags()}</div>
                 )}

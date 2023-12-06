@@ -8,10 +8,16 @@
         margin-bottom: 16px;
     }
 
-    &-allNotes {
+    &-searchSection {
         display: flex;
+        max-width: 100%;
         flex-direction: column;
-        gap: 24px;
+        gap: 8px;
+        margin-bottom: 20px;
+
+        input {
+            max-width: 276px;
+        }
     }
 
 }
