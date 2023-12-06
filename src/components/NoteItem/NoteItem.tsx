@@ -9,7 +9,7 @@ interface INoteItem {
     tags: string[];
     onDelete: () => void;
     onEdit: (newText: string) => void;
-    highlightTags: (note: string, tags: string[]) => JSX.Element;
+    highlightTags: () => JSX.Element;
 }
 
 const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlightTags }) => {
@@ -35,7 +35,7 @@ const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlight
                         onChange={(e) => setEditedText(e.target.value)}
                     />
                 ) : (
-                    <div>{highlightTags(text, tags)}</div>
+                    <div>{highlightTags()}</div>
                 )}
                 <div className="noteItem-buttons">
                     <Button onClick={isEditing ? handleSave : handleEdit} type="primary">
@@ -47,8 +47,8 @@ const NoteItem: React.FC<INoteItem> = ({ text, tags, onDelete, onEdit, highlight
                 </div>
             </div>
             <div className="noteItem-tags">
-                {tags.filter(tag => text.includes(tag)).map((tag) => (
-                    <Tag bordered={false}>
+                {tags.filter(tag => text.includes(tag)).map((tag, index) => (
+                    <Tag key={index} bordered={false}>
                         {tag}
                     </Tag>
                 ))}

@@ -2,37 +2,54 @@ import "./NotesList.scss";
 import "../Container.css"
 import NotesForm from "../NotesForm/NotesForm";
 import NoteItem from "../NoteItem/NoteItem";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useId, useCallback } from "react";
 import { Tag } from "antd";
+import { CloseCircleOutlined } from '@ant-design/icons';
+import { v4 as uuidv4 } from 'uuid';
+
+interface INote {
+    id: string;
+    text: string;
+}
 
 
 const NotesList: React.FC = () => {
-    const [newNote, setNewNote] = useState('');
-    const [filteredNotes, setFilteredNotes] = useState<string[]>([]);
-    const [isFiltering, setIsFiltering] = useState(false);
+    const uniqueId = uuidv4();
+    const { CheckableTag } = Tag;
+
+    const [newNote, setNewNote] = useState("");
+    const [filteredNotes, setFilteredNotes] = useState<INote[]>([]);
     const storedNotes = localStorage.getItem('notes');
 
-    const initialNotes: string[] = storedNotes ? JSON.parse(storedNotes) : [];
-
-    const [notes, setNotes] = useState<string[]>(initialNotes);
+    const initialNotes: INote[] = storedNotes ? JSON.parse(storedNotes) : [{}];
+    const [notes, setNotes] = useState<INote[]>(initialNotes);
 
     const [tags, setTags] = useState<Array<string>>([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-    const findTagsAll = (notes: string[]): string[] => {
-        const regex = /#[a-zA-Z0-9_]+/g;
+    const findAllTags = (notes: INote[]): string[] => {
+        const regex = /#[a-zA-ZА-Яа-я0-9_-]+/g;
         let resultTags: string[] = [];
-        notes.forEach((note, index) => {
-            const matches = note.match(regex);
-            if (matches) {
-                matches.forEach(match => {
-                    resultTags.push(match);
-                })
+        notes.forEach(({ text }) => {
+            if (typeof text === 'string') {
+                const matches = text.match(regex);
+                if (matches) {
+                    matches.forEach(match => {
+                        if (match.length <= 50) {
+                            resultTags.push(match);
+                        }
+                    });
+                }
             }
         });
         return Array.from(new Set(resultTags));
     };
 
-    const highlightMatches = (note: string, tags: string[]): JSX.Element => {
+    const highlightMatches = (note: string | undefined | null, tags: string[]): JSX.Element => {
+        if (!note || typeof note !== 'string') {
+            return <p className="noteItem-text"></p>;
+        }
+
         const regex = new RegExp(tags.join("|"), "gi");
         const highlightedNote = note.replace(regex, match => `<span class="highlight">${match}</span>`);
 
@@ -45,7 +62,7 @@ const NotesList: React.FC = () => {
         console.log("Get Items");
         const storedNotes = localStorage.getItem('notes');
         if (storedNotes) {
-            setNotes(JSON.parse(storedNotes));
+            setNotes(JSON.parse(storedNotes).reverse());
         }
     }, []);
 
@@ -53,40 +70,48 @@ const NotesList: React.FC = () => {
     useEffect(() => {
         console.log('Update Items');
         localStorage.setItem('notes', JSON.stringify(notes));
-        setTags(findTagsAll(notes));
+        setTags(findAllTags(notes));
     }, [notes]);
+
+    useEffect(() => {
+        const notesWithTags = notes.filter((note) =>
+            selectedTags.some((selectedTag) => note.text.includes(selectedTag))
+        );
+        setFilteredNotes(notesWithTags);
+    }, [notes, selectedTags]);
 
 
     const addNote = () => {
         if (newNote.trim() !== "") {
-            setNotes((prevNotes) => [...prevNotes, newNote]);
+            const newNoteItem: INote = { id: uniqueId, text: newNote.replace(/\n/g, '<br/>') };
+            setNotes((prevNotes) => [...prevNotes, newNoteItem]);
             setNewNote('');
         }
     }
 
-    const deleteNote = (index: number) => {
+    const deleteNote = (index: string) => {
         setNotes((prevNotes) => {
             const updateNotes = [...prevNotes];
-            updateNotes.splice(index, 1);
-            return updateNotes;
+            return updateNotes.filter(note => {
+                return note.id !== index;
+            });
         })
     }
 
-    const editNote = (index: number, text: string) => {
+    const editNote = (index: string, text: string) => {
         setNotes((prevNotes) => {
-            const updatedNotes = [...prevNotes];
-            updatedNotes[index] = text;
-            return updatedNotes;
+            return prevNotes.map(item => {
+                return item.id === index ? { ...item, text: text } : item;
+            });
         });
     }
 
-    const handleClickTag = (clickedTag: string) => {
-        setIsFiltering(!isFiltering);
-        const filteredNotes = notes.filter((note) => {
-            return note.includes(clickedTag);
-        })
-        setFilteredNotes(filteredNotes);
-    }
+    const handleTagsChange = (tag: string, checked: boolean) => {
+        const nextSelectedTags = checked
+            ? [...selectedTags, tag]
+            : selectedTags.filter((t) => t !== tag);
+        setSelectedTags(nextSelectedTags);
+    };
 
 
     return (
@@ -96,21 +121,21 @@ const NotesList: React.FC = () => {
             <div className="notesList-allNotes">
                 <div className="notesList-tags">
                     {tags.map((tag, index) => (
-                        <Tag key={index} bordered={false} onClick={() => handleClickTag(tag)}>
+                        <CheckableTag style={{ border: "1px solid #d9d9d9" }} key={index} checked={selectedTags.includes(tag)} onChange={(checked) => handleTagsChange(tag, checked)}>
                             {tag}
-                        </Tag>
+                        </CheckableTag>
                     ))
                     }
                 </div>
                 <ul className="notesList-list">
-                    {(isFiltering ? filteredNotes : notes).map((note: string, index) => {
+                    {(selectedTags.length > 0 ? filteredNotes : notes).map((note) => {
                         return <NoteItem
-                            key={index}
-                            text={note}
+                            key={note.id}
+                            text={note.text}
                             tags={tags}
-                            onDelete={() => deleteNote(index)}
-                            onEdit={(newText: string) => editNote(index, newText)}
-                            highlightTags={(note: string, tags: string[]) => highlightMatches(note, tags)} />
+                            onDelete={() => deleteNote(note.id)}
+                            onEdit={(newText: string) => editNote(note.id, newText)}
+                            highlightTags={() => highlightMatches(note.text, tags)} />
                     })}
                 </ul>
             </div>

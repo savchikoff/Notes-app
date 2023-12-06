@@ -1,5 +1,12 @@
 .container {
+    padding: 4px 0 81px 0;
     max-width: 70%;
     margin: 0 auto;
     box-sizing: content-box;
+}
+
+@media (max-width: 700px) {
+    .container {
+        max-width: 80%;
+    }
 }
