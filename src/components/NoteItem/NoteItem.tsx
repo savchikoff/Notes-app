@@ -1,5 +1,8 @@
 import { Button, Input, Tag } from "antd";
 import { useState } from "react";
+import { observer } from "mobx-react-lite";
+import notesStore from "../../stores/notes-store"
+import { NotificationManager } from 'react-notifications';
 import "./NoteItem.scss"
 
 const { TextArea } = Input;
@@ -8,12 +11,13 @@ interface INoteItem {
     text: string;
     header: string;
     tags: string[];
-    onDelete: () => void;
-    onEdit: (newText: string, newHeader: string) => void;
+    id: string;
     highlightTags: () => JSX.Element;
 }
 
-const NoteItem: React.FC<INoteItem> = ({ text, header, tags, onDelete, onEdit, highlightTags }) => {
+const NoteItem: React.FC<INoteItem> = ({ text, header, tags, id, highlightTags }) => {
+
+    const { editNote, deleteNote } = notesStore;
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState(text);
     const [editedHeader, setEditedHeader] = useState(header);
@@ -24,8 +28,16 @@ const NoteItem: React.FC<INoteItem> = ({ text, header, tags, onDelete, onEdit, h
     }
 
     const handleSave = () => {
-        setIsEditing(false);
-        onEdit(editedText, editedHeader);
+        if (editedText.trim() !== "" && editedHeader.trim() !== "") {
+            if (notesStore.isCorrectTag(editedText)) {
+                setIsEditing(false);
+                editNote(id, editedText, editedHeader);
+            } else {
+                NotificationManager.warning('Тег в заметке не может содержать более 50 символов', 'Исправьте ввод', 3000);
+            }
+        } else {
+            NotificationManager.warning('Вы заполнили не все поля', 'Исправьте ввод', 3000);
+        }
     }
     return (
         <li>
@@ -53,7 +65,7 @@ const NoteItem: React.FC<INoteItem> = ({ text, header, tags, onDelete, onEdit, h
                     <Button onClick={isEditing ? handleSave : handleEdit} type="primary">
                         {isEditing ? "Save" : "Edit"}
                     </Button>
-                    <Button onClick={onDelete} type="primary" danger>
+                    <Button onClick={() => deleteNote(id)} type="primary" danger>
                         Delete
                     </Button>
                 </div>
@@ -69,4 +81,6 @@ const NoteItem: React.FC<INoteItem> = ({ text, header, tags, onDelete, onEdit, h
     )
 }
 
-export default NoteItem;
+const NoteItemObserver = observer(NoteItem);
+
+export default NoteItemObserver;
